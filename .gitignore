@@ -1,2 +1,5 @@
 web-api-auth-examples/
 env/
+credentials.txt
+row.json
+seed_tracks.txt
