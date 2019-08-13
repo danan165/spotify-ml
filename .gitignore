@@ -3,3 +3,4 @@ env/
 credentials.txt
 row.json
 seed_tracks.txt
+verify_format.pkl

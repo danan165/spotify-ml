@@ -2,3 +2,6 @@ requests==2.22.0
 regex==2019.6.8
 pandas==0.22.0
 tqdm==4.32.2
+tabulate==0.8.3
+scikit-learn==0.21.3
+sklearn==0.0

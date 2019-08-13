@@ -6,6 +6,8 @@ import pandas as pd
 from tqdm import tqdm
 import sys
 import json
+import pprint
+from tabulate import tabulate
 
 def get_token():
     # "credentials.txt" is a two line file that contains your
@@ -68,7 +70,6 @@ def get_track_audio_analysis(track_id):
     return response
 
 
-# TODO: flatten response for storage in pandas dataframe
 def get_track(track_id):
     token = get_token()
 
@@ -87,7 +88,7 @@ def get_track(track_id):
     results = {}
 
     results['explicit'] = response['explicit']
-    results['available_markets'] = response['available_markets']
+    #results['available_markets'] = response['available_markets']
     results['duration_ms'] = response['duration_ms']
     results['name'] = response['name']
     results['popularity'] = response['popularity']
@@ -99,7 +100,14 @@ def get_track(track_id):
         artist.pop('type')
         artist.pop('href')
 
-    results['album'] = response['album']
+    #results['album_artists'] = response['album']['artists']
+    results['album_total_tracks'] = response['album']['total_tracks']
+    results['album_name'] = response['album']['name']
+    results['album_uri'] = response['album']['uri']
+    results['album_release_date'] = response['album']['release_date']
+    results['album_release_date_precision'] = response['album']['release_date_precision']
+    results['album_id'] = response['album']['id']
+    results['album_type'] = response['album']['album_type']
 
     results['artists'] = list()
 
@@ -116,9 +124,21 @@ if __name__=="__main__":
     df = pd.read_pickle('track_ids.pkl')
     df = df.set_index('track_id')
 
-    final_df = pd.DataFrame()
+    final_df_keys = ['album_release_date_precision', 'valence', 
+    'popularity', 'album_id', 'speechiness', 'album_artists', 'loudness', 
+    'album_uri', 'available_markets', 'name', 'artists', 'duration_ms', 'track_id', 
+    'key', 'album_total_tracks', 'explicit', 'album_release_date', 'mode', 'album_name', 
+    'instrumentalness', 'liveness', 'tempo', 'acousticness', 'genre', 'danceability', 
+    'album_type', 'uri', 'energy', 'time_signature']
 
-    for i, row in df.iterrows():
+    final_df = pd.DataFrame(columns=final_df_keys)
+
+    #df  = pd.DataFrame([podcast_dict], columns=podcast_dict.keys())
+    #df_podcast = pd.concat([df_podcast, df], axis =0).reset_index()
+
+    pp = pprint.PrettyPrinter(indent=4)
+
+    for i, row in tqdm(df.iterrows()):
         current_dict = {'track_id': i, 'genre': row['genre']}
         track_info = get_track(i)
         track_features = get_track_audio_features(i)
@@ -126,9 +146,12 @@ if __name__=="__main__":
 
         x = {**current_dict, **track_info}
         z = {**x, **track_features}
-        
-        final_df.append(z)
 
-        print(final_df)
+        #pp.pprint(z)
 
-        exit(1)
+        temp_df = pd.DataFrame(z)
+        final_df = pd.concat([final_df, temp_df], axis=0).reset_index(drop=True)
+        final_df.set_index('track_id')
+        final_df.to_pickle('predict_genre_dataset.pkl')
+
+        #print(tabulate(final_df, headers='keys', tablefmt='psql'))
