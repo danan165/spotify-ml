@@ -1,6 +1,6 @@
 # spotify-ml
 
-Using supervised machine learning to predict the classify a song's genre as pop, hip hop, or rock-n-roll based on properties returned from the Spotify API.
+Using supervised machine learning to classify a song's genre as pop, hip hop, or rock-n-roll based on properties returned from the Spotify API.
 
 ## Dataset Creation
 
