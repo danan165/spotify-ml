@@ -1,0 +1,4 @@
+add features from "Audio Analysis" API endpoint
+get more samples of pop and hip-hop for training/testing (these labels had lower metrics)
+save finalized model as PKL file
+create pipeline for genre prediction of new song
