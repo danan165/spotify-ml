@@ -8,7 +8,7 @@ Currently a two step process: retrieving a random list of tracks from each genre
 
 ### Retrieve a List of Tracks
 
-To retrieve a random list of tracks per genre that would be sufficiently large enough for training/testing the model, I used the following endpoint from the spotify API: (Get Recommendations from Seed Genre)[https://developer.spotify.com/documentation/web-api/reference/browse/get-recommendations/].
+To retrieve a random list of tracks per genre that would be sufficiently large enough for training/testing the model, I used the following endpoint from the spotify API: [Get Recommendations from Seed Genre](https://developer.spotify.com/documentation/web-api/reference/browse/get-recommendations/).
 
 I iteratively queried this endpoint and added track ids to a set in order to retrieve a large, random set of ids with no duplicates. The endpoint can only retrieve a maximum of 100 tracks at a time.
 
@@ -18,7 +18,7 @@ Running this file will result in a saved pickle file (`datasets/track_ids.pkl`) 
 
 ### Retrieve Properties for Each Unique Track
 
-I retrieved properties of each track by querying the following spotify API endpoints: (Get a Track)[https://developer.spotify.com/documentation/web-api/reference/tracks/get-track/], (Get Audio Features for a Track)[https://developer.spotify.com/documentation/web-api/reference/tracks/get-audio-features/].
+I retrieved properties of each track by querying the following spotify API endpoints: [Get a Track](https://developer.spotify.com/documentation/web-api/reference/tracks/get-track/), [Get Audio Features for a Track](https://developer.spotify.com/documentation/web-api/reference/tracks/get-audio-features/).
 
 I added each property as a column in a pandas dataframe. All of this work is done in `dataset-creation/get_track_info.py`.
 
