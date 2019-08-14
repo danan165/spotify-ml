@@ -1,8 +1,13 @@
 import os
 import pandas as pd
+import numpy as np
 from tqdm import tqdm
 from datetime import datetime
+import matplotlib.pyplot as plt
 from sklearn import tree
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import confusion_matrix
+from sklearn.metrics import recall_score, precision_score, classification_report
 
 
 def drop_duplicate_tracks(df):
@@ -28,25 +33,36 @@ def drop_duplicate_tracks(df):
 
     return df
 
-
+# convert columns to features (artists, available markets, album release data)
 def convert_cols_to_features(pred_df):
-    # convert columns to features (artists, available markets, album release data)
     for i, row in tqdm(pred_df.iterrows()):
 
         # TODO: only use number of artists
 
         # TODO: only use number of available markets
 
-        # convert release date to datetime
+        # convert release date to timestamp
         if row['album_release_date_precision'] == 'day':
             # yyyy-mm-dd
-            pred_df.loc[i, 'album_release_date'] = datetime.strptime(row['album_release_date'], '%Y-%m-%d')
+            date_time = datetime.strptime(row['album_release_date'], '%Y-%m-%d')
+            pred_df.loc[i, 'album_release_date'] = date_time.timestamp()
         elif row['album_release_date_precision'] == 'year':
             # yyyy
-            pred_df.loc[i, 'album_release_date'] = datetime.strptime(row['album_release_date'], '%Y')
-        else:
+            date_time = datetime.strptime(row['album_release_date'], '%Y')
+            pred_df.loc[i, 'album_release_date'] = date_time.timestamp()
+        elif row['album_release_date_precision'] == 'month':
             # yyyy-mm
-            pred_df.loc[i, 'album_release_date'] = datetime.strptime(row['album_release_date'], '%Y-%m')
+            date_time = datetime.strptime(row['album_release_date'], '%Y-%m')
+            pred_df.loc[i, 'album_release_date'] = date_time.timestamp()
+
+        # album type must be mapped to ints
+        if row['album_type'] == 'single':
+            pred_df.loc[i, 'album_type'] = 0
+        elif row['album_type'] == 'album':
+            pred_df.loc[i, 'album_type'] = 1
+        elif row['album_type'] == 'compilation':
+            pred_df.loc[i, 'album_type'] = 2
+        
 
     return pred_df
 
@@ -59,18 +75,79 @@ def drop_non_feature_columns(pred_df):
     return pred_df
 
 
+def plot_feature_importance(model, df):
+    importances = model.feature_importances_
+    indices = np.argsort(importances)[::-1]
+
+    #sort feature names for display
+    names = [df.columns[i] for i in indices]
+
+    # Create plot
+    plt.figure()
+
+    # Create plot title
+    plt.title("Feature Importance")
+
+    # Add bars
+    plt.bar(range(df.shape[1]), importances[indices])
+
+    # Add feature names as x-axis labels
+    plt.xticks(range(df.shape[1]), names, rotation=90)
+
+    # Save plot
+    plt.savefig(fname=os.path.join(os.path.dirname(__file__), 'feature-importance', 'feature_importance.png'), bbox_inches='tight')
+
+
+def print_precision_scores(y_test, y_predict):
+    print('Macro Precision: ', precision_score(y_test, y_predict, average='macro'))
+    print('Micro Precision: ', precision_score(y_test, y_predict, average='micro'))
+    print('Weighted Precision: ', precision_score(y_test, y_predict, average='weighted'))
+
+
+def print_recall_scores(y_test, y_predict):
+    print('Macro Recall: ', recall_score(y_test, y_predict, average='macro'))
+    print('Micro Recall: ', recall_score(y_test, y_predict, average='micro'))
+    print('Weighted Recall: ', recall_score(y_test, y_predict, average='weighted'))
+
+
 if __name__=="__main__":
 
     # load dataset
-    df = pd.read_pickle('predict_genre_dataset.pkl')
+    df = pd.read_pickle('datasets/predict_genre_dataset.pkl')
 
     # clean dataset for training/testing
+    print('cleaning the dataset...')
     df = drop_duplicate_tracks(df)
     df = convert_cols_to_features(df)
     df = drop_non_feature_columns(df)
 
     # split into training and testing set
+    print('splitting into training and testing...')
+    X = df.drop('genre', axis=1)    # features w/o labels
+    y = df['genre']                 # labels
 
-    # train the model
+    X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=1)
+
+    # create the model
+    print('creating the model...')
+    model = tree.DecisionTreeClassifier()
+
+    # fit the model
+    print('training the model...')
+    model.fit(X_train, y_train)
 
     # evaluate the model (precision and recall)
+    print('testing the model...')
+    y_predict = model.predict(X_test)
+
+    # classification report
+    target_names = ['pop', 'hip-hop', 'rock-n-roll']
+    print(classification_report(y_test, y_predict, target_names=target_names))
+    
+    # feature importance
+    plot_feature_importance(model, X)
+
+    # precision/recall scores
+    print_precision_scores(y_test, y_predict)
+    print_recall_scores(y_test, y_predict)
+    

@@ -107,6 +107,7 @@ def get_track_recommendations_by_seed_genre(seed_genre):
 
 
 if __name__=='__main__':
+    datasets_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'datasets')
 
     # Create dataset as a dataframe
     df = pd.DataFrame(columns = ['track_id', 'genre'])
@@ -131,5 +132,5 @@ if __name__=='__main__':
 
     print(df.shape)
 
-    df.to_pickle('track_ids_copy.pkl')
+    df.to_pickle(os.path.join(datasets_path, 'track_ids_copy.pkl'))
 

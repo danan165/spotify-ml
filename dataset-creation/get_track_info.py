@@ -1,5 +1,6 @@
 import requests
 import os
+from pathlib import Path
 import re
 import base64
 import pandas as pd
@@ -121,7 +122,8 @@ def get_track(track_id):
 
 
 if __name__=="__main__":
-    df = pd.read_pickle('track_ids.pkl')
+    datasets_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'datasets')
+    df = pd.read_pickle(os.path.join(datasets_path, 'track_ids.pkl'))
     df = df.set_index('track_id')
 
     final_df_keys = ['album_release_date_precision', 'valence', 
@@ -152,6 +154,6 @@ if __name__=="__main__":
         temp_df = pd.DataFrame(z)
         final_df = pd.concat([final_df, temp_df], axis=0).reset_index(drop=True)
         final_df.set_index('track_id')
-        final_df.to_pickle('predict_genre_dataset.pkl')
+        final_df.to_pickle(os.path.join(datasets_path, 'predict_genre_dataset_copy.pkl'))
 
         #print(tabulate(final_df, headers='keys', tablefmt='psql'))
