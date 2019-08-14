@@ -1,4 +1,5 @@
 add features from "Audio Analysis" API endpoint
 get more samples of pop and hip-hop for training/testing (these labels had lower metrics)
 save finalized model as PKL file
+evaluate other classifiers on the dataset (https://stats.stackexchange.com/questions/376190/how-would-you-use-decision-trees-to-learn-to-predict-a-multiclass-problem-involv)
 create pipeline for genre prediction of new song
