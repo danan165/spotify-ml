@@ -1,6 +1,6 @@
 # spotify-ml
 
-Using supervised machine learning to classify a song's genre as pop, hip hop, or rock-n-roll based on properties returned from the Spotify API.
+Using supervised machine learning to classify a song's genre as **pop**, **hip-hop**, or **rock-n-roll** based on properties returned from the Spotify API.
 
 ## Dataset Creation
 
@@ -27,3 +27,5 @@ Running this file will result in a saved pickle file (`datasets/predict_genre_da
 ## Feature Creation / Model Creation
 
 This is done in `predict_genre.py`.
+
+Current performance metrics per label can be found in the `model-performance` folder.

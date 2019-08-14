@@ -141,8 +141,11 @@ if __name__=="__main__":
     y_predict = model.predict(X_test)
 
     # classification report
+    print('saving classification report...')
     target_names = ['pop', 'hip-hop', 'rock-n-roll']
-    print(classification_report(y_test, y_predict, target_names=target_names))
+    report = classification_report(y_test, y_predict, target_names=target_names, output_dict=True)
+    report_df = pd.DataFrame(report).transpose()
+    report_df.to_csv(r'model-performance/classification_report.csv')
     
     # feature importance
     plot_feature_importance(model, X)
