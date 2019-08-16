@@ -38,7 +38,7 @@ def get_token():
     return response['access_token']
 
 
-def get_track_audio_features(track_id):
+def get_track_audio_features(track_id, df_keys):
     token = get_token()
 
     url = 'https://api.spotify.com/v1/audio-features/{}'.format(track_id) 
@@ -48,17 +48,16 @@ def get_track_audio_features(track_id):
         headers = {'Authorization': 'Bearer ' + token}
     ).json()
 
-    response.pop('id')
-    response.pop('uri')
-    response.pop('track_href')
-    response.pop('analysis_url')
-    response.pop('type')
-    response.pop('duration_ms')
+    results = {}
 
-    return response
+    for df_key in df_keys:
+        if df_key in response.keys():
+            results[df_key] = response[df_key]
+
+    return results
 
 
-def get_track_audio_analysis(track_id):
+def get_track_audio_analysis(track_id, df_keys):
     token = get_token()
 
     url = 'https://api.spotify.com/v1/audio-analysis/{}'.format(track_id)
@@ -68,10 +67,16 @@ def get_track_audio_analysis(track_id):
         headers = {'Authorization': 'Bearer ' + token}
     ).json()
 
-    return response
+    results = {}
+
+    for df_key in df_keys:
+        if df_key in response.keys():
+            results[df_key] = response[df_key]
+
+    return results
 
 
-def get_track(track_id):
+def get_track(track_id, df_keys):
     token = get_token()
 
     url = 'https://api.spotify.com/v1/tracks/{}'.format(track_id)
@@ -81,79 +86,57 @@ def get_track(track_id):
         headers = {'Authorization': 'Bearer ' + token}
     ).json()
 
-    response['album'].pop('images')
-    response['album'].pop('href')
-    response['album'].pop('available_markets')
-    response['album'].pop('external_urls')
-
     results = {}
 
-    results['explicit'] = response['explicit']
-    #results['available_markets'] = response['available_markets']
-    results['duration_ms'] = response['duration_ms']
-    results['name'] = response['name']
-    results['popularity'] = response['popularity']
-    results['uri'] = response['uri']
-
-    for artist in response['album']['artists']:
-        artist.pop('uri')
-        artist.pop('external_urls')
-        artist.pop('type')
-        artist.pop('href')
-
-    #results['album_artists'] = response['album']['artists']
-    results['album_total_tracks'] = response['album']['total_tracks']
-    results['album_name'] = response['album']['name']
-    results['album_uri'] = response['album']['uri']
-    results['album_release_date'] = response['album']['release_date']
-    results['album_release_date_precision'] = response['album']['release_date_precision']
-    results['album_id'] = response['album']['id']
-    results['album_type'] = response['album']['album_type']
-
-    results['artists'] = list()
-
-    for artist in response['artists']:
-        results['artists'].append({
-            'name': artist['name'],
-            'id': artist['id']
-        })
+    for df_key in df_keys:
+        if df_key in response.keys():
+            if df_key == 'available_markets':
+                results[df_key] = len(response[df_key])
+            else:
+                results[df_key] = response[df_key]
+        elif 'album' in response.keys():
+            if df_key == 'album_release_date':
+                results[df_key] = response['album']['release_date']
+            elif df_key == 'album_release_date_precision':
+                results[df_key] = response['album']['release_date_precision']
+            elif df_key == 'album_total_tracks':
+                results[df_key] = response['album']['total_tracks']
+            elif df_key == 'album_type':
+                results[df_key] = response['album']['album_type']
 
     return results
 
 
 if __name__=="__main__":
     datasets_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'datasets')
-    df = pd.read_pickle(os.path.join(datasets_path, 'track_ids.pkl'))
+    df = pd.read_pickle(os.path.join(datasets_path, 'track_ids_copy.pkl'))
     df = df.set_index('track_id')
 
-    final_df_keys = ['album_release_date_precision', 'valence', 
-    'popularity', 'album_id', 'speechiness', 'album_artists', 'loudness', 
-    'album_uri', 'available_markets', 'name', 'artists', 'duration_ms', 'track_id', 
-    'key', 'album_total_tracks', 'explicit', 'album_release_date', 'mode', 'album_name', 
-    'instrumentalness', 'liveness', 'tempo', 'acousticness', 'genre', 'danceability', 
-    'album_type', 'uri', 'energy', 'time_signature']
+    final_df_keys = list()
+
+    with open(os.path.join(datasets_path, 'df_keys.txt')) as f:
+        for line in f.readlines():
+            final_df_keys.append(line.strip())
 
     final_df = pd.DataFrame(columns=final_df_keys)
-
-    #df  = pd.DataFrame([podcast_dict], columns=podcast_dict.keys())
-    #df_podcast = pd.concat([df_podcast, df], axis =0).reset_index()
 
     pp = pprint.PrettyPrinter(indent=4)
 
     for i, row in tqdm(df.iterrows()):
         current_dict = {'track_id': i, 'genre': row['genre']}
-        track_info = get_track(i)
-        track_features = get_track_audio_features(i)
-        # track_analysis = get_track_audio_analysis(i)
+        track_info = get_track(i, final_df_keys)
+        track_features = get_track_audio_features(i, final_df_keys)
+        #track_analysis = get_track_audio_analysis(i, final_df_keys)
 
         x = {**current_dict, **track_info}
         z = {**x, **track_features}
 
-        #pp.pprint(z)
+        # pp.pprint(z)
 
-        temp_df = pd.DataFrame(z)
+        temp_df = pd.DataFrame.from_records(z, columns=final_df_keys, index=['track_id'])
         final_df = pd.concat([final_df, temp_df], axis=0).reset_index(drop=True)
         final_df.set_index('track_id')
-        final_df.to_pickle(os.path.join(datasets_path, 'predict_genre_dataset_copy.pkl'))
 
         #print(tabulate(final_df, headers='keys', tablefmt='psql'))
+
+    final_df.to_pickle(os.path.join(datasets_path, 'predict_genre_dataset_copy.pkl'))

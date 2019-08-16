@@ -69,8 +69,7 @@ def convert_cols_to_features(pred_df):
 
 def drop_non_feature_columns(pred_df):
     # drop non-feature columns
-    cols_to_drop = ['album_artists', 'album_id', 'album_name', 'artists',
-    'album_uri', 'name', 'track_id', 'uri', 'available_markets', 'album_release_date_precision']
+    cols_to_drop = ['track_id', 'album_release_date_precision']
     pred_df = pred_df.drop(columns=cols_to_drop)
     return pred_df
 
@@ -113,7 +112,7 @@ def print_recall_scores(y_test, y_predict):
 if __name__=="__main__":
 
     # load dataset
-    df = pd.read_pickle('datasets/predict_genre_dataset.pkl')
+    df = pd.read_pickle('datasets/predict_genre_dataset_copy.pkl')
 
     # clean dataset for training/testing
     print('cleaning the dataset...')

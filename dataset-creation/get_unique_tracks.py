@@ -5,6 +5,7 @@ import base64
 import pandas as pd
 from tqdm import tqdm
 import sys
+from json.decoder import JSONDecodeError
 
 def get_token():
     # "credentials.txt" is a two line file that contains your
@@ -73,9 +74,12 @@ def get_track_recommendations_by_seed_genres(seed_genres):
 
     r = requests.get(url = url, headers = headers)
 
-    data = r.json()
-
     track_ids = list()
+
+    try:
+        data = r.json()
+    except JSONDecodeError as e:
+        return track_ids
 
     for track in data['tracks']:
         track_ids.append(str(track['id']))
@@ -117,7 +121,7 @@ if __name__=='__main__':
 
     track_ids = set()
 
-    repetitions = 700
+    repetitions = 900
 
     for genre in tqdm(seed_genres):
         i = 0
@@ -128,6 +132,8 @@ if __name__=='__main__':
         df2 = pd.DataFrame({'track_id': list(track_ids)})
         df2['genre'] = genre
         df = df.append(df2, ignore_index=True)
+        print('genre: ', genre)
+        print('num track ids: ', len(track_ids))
         track_ids = set()
 
     print(df.shape)
