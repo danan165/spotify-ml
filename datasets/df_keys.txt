@@ -20,3 +20,5 @@ danceability
 album_type
 energy
 time_signature
+sections
+segments

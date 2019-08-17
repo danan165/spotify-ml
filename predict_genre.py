@@ -112,7 +112,7 @@ def print_recall_scores(y_test, y_predict):
 if __name__=="__main__":
 
     # load dataset
-    df = pd.read_pickle('datasets/predict_genre_dataset_copy.pkl')
+    df = pd.read_pickle('datasets/predict_genre_dataset_tpr.pkl')
 
     # clean dataset for training/testing
     print('cleaning the dataset...')

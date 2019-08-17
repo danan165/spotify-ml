@@ -117,7 +117,7 @@ if __name__=='__main__':
     df = pd.DataFrame(columns = ['track_id', 'genre'])
 
     # use "get_available_genre_seeds" function to pick some seed genres.
-    seed_genres = ['pop', 'hip-hop', 'rock-n-roll']
+    seed_genres = ['tango', 'pop', 'rock-n-roll']
 
     track_ids = set()
 
@@ -136,7 +136,5 @@ if __name__=='__main__':
         print('num track ids: ', len(track_ids))
         track_ids = set()
 
-    print(df.shape)
-
-    df.to_pickle(os.path.join(datasets_path, 'track_ids_copy.pkl'))
+    df.to_pickle(os.path.join(datasets_path, 'track_ids_tpr.pkl'))
 

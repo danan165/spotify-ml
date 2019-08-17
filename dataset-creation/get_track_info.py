@@ -71,7 +71,7 @@ def get_track_audio_analysis(track_id, df_keys):
 
     for df_key in df_keys:
         if df_key in response.keys():
-            results[df_key] = response[df_key]
+            results[df_key] = len(response[df_key])
 
     return results
 
@@ -109,7 +109,7 @@ def get_track(track_id, df_keys):
 
 if __name__=="__main__":
     datasets_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'datasets')
-    df = pd.read_pickle(os.path.join(datasets_path, 'track_ids_copy.pkl'))
+    df = pd.read_pickle(os.path.join(datasets_path, 'track_ids_tpr.pkl'))
     df = df.set_index('track_id')
 
     final_df_keys = list()
@@ -122,14 +122,15 @@ if __name__=="__main__":
 
     pp = pprint.PrettyPrinter(indent=4)
 
-    for i, row in tqdm(df.iterrows()):
+    for i, row in tqdm(df.iterrows()): 
         current_dict = {'track_id': i, 'genre': row['genre']}
         track_info = get_track(i, final_df_keys)
         track_features = get_track_audio_features(i, final_df_keys)
-        #track_analysis = get_track_audio_analysis(i, final_df_keys)
+        track_analysis = get_track_audio_analysis(i, final_df_keys)
 
         x = {**current_dict, **track_info}
-        z = {**x, **track_features}
+        y = {**x, **track_features}
+        z = {**y, **track_analysis}
 
         # pp.pprint(z)
 
@@ -139,4 +140,4 @@ if __name__=="__main__":
 
         #print(tabulate(final_df, headers='keys', tablefmt='psql'))
 
-    final_df.to_pickle(os.path.join(datasets_path, 'predict_genre_dataset_copy.pkl'))
+    final_df.to_pickle(os.path.join(datasets_path, 'predict_genre_dataset_tpr.pkl'))
