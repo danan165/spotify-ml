@@ -56,7 +56,7 @@ def get_available_genre_seeds():
     return genres_list
 
 
-def get_track_recommendations_by_seed_genres(seed_genres):
+def get_track_ids_by_seed_genres(seed_genres):
     token = get_token()
 
     seed_genres_param = ''
@@ -89,7 +89,7 @@ def get_track_recommendations_by_seed_genres(seed_genres):
     return track_ids
 
 
-def get_track_recommendations_by_seed_genre(seed_genre):
+def get_track_ids_by_seed_genre(seed_genre):
     token = get_token()
 
     url = 'https://api.spotify.com/v1/recommendations?seed_genres={}&limit=100'.format(seed_genre)
@@ -117,16 +117,16 @@ if __name__=='__main__':
     df = pd.DataFrame(columns = ['track_id', 'genre'])
 
     # use "get_available_genre_seeds" function to pick some seed genres.
-    seed_genres = ['tango', 'pop', 'rock-n-roll']
+    seed_genres = ['hip-hop', 'pop', 'rock-n-roll']
 
     track_ids = set()
 
-    repetitions = 900
+    repetitions = 2000
 
     for genre in tqdm(seed_genres):
         i = 0
         while i < repetitions:
-            track_ids.update(get_track_recommendations_by_seed_genre(genre))
+            track_ids.update(get_track_ids_by_seed_genre(genre))
             i += 1
 
         df2 = pd.DataFrame({'track_id': list(track_ids)})
@@ -136,5 +136,5 @@ if __name__=='__main__':
         print('num track ids: ', len(track_ids))
         track_ids = set()
 
-    df.to_pickle(os.path.join(datasets_path, 'track_ids_tpr.pkl'))
+    df.to_pickle(os.path.join(datasets_path, 'track_ids_05_13.pkl'))
 
